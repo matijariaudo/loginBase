@@ -65,12 +65,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var express_1 = __importDefault(require("express"));
 var userDB_1 = __importDefault(require("./userDB"));
 var express_validator_1 = require("express-validator");
-var google_auth_library_1 = require("google-auth-library");
-var https_1 = __importDefault(require("https"));
 var crypt_1 = require("./crypt");
 var jwt_1 = require("./jwt");
+var passport_1 = require("./passport");
 var dotenv = __importStar(require("dotenv"));
 dotenv.config();
+var JWTpass = process.env.JWT || '';
 var router = express_1.default.Router();
 // Middleware de validación de datos para el alta de usuario
 var validateUserData = [
@@ -81,6 +81,13 @@ var validateUserData = [
     (0, express_validator_1.body)('telefono').notEmpty().isString(),
     (0, express_validator_1.body)('email').notEmpty().isEmail(),
 ];
+var middleSession = function (req, res, next) {
+    if (!('user' in req.session)) {
+        // Haz algo si el usuario no está autenticado
+        console.log(req.session);
+    }
+    next();
+};
 // Ruta para crear un nuevo usuario (Alta)
 router.post('/alta', validateUserData, function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var userData, _a, newUser, error_1;
@@ -164,6 +171,32 @@ router.put('/:id', validateUserData, function (req, res) { return __awaiter(void
         }
     });
 }); });
+router.post('/token', middleSession, function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var token, id, user, newToken;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                token = req.body.token;
+                return [4 /*yield*/, (0, jwt_1.validateAndDecodeJWT)(token, JWTpass)];
+            case 1:
+                id = _a.sent();
+                if (!id) {
+                    return [2 /*return*/, res.json({ status: false })];
+                }
+                return [4 /*yield*/, userDB_1.default.findById(id.id)];
+            case 2:
+                user = _a.sent();
+                if (!user) {
+                    return [2 /*return*/, res.json({ status: false })];
+                }
+                return [4 /*yield*/, (0, jwt_1.generateJWT)({ id: user._id }, JWTpass, '1h')];
+            case 3:
+                newToken = _a.sent();
+                console.log(user);
+                return [2 /*return*/, res.json({ status: true, user: user, token: newToken })];
+        }
+    });
+}); });
 router.post('/session', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var _a, email, password, user, cont, token, error_4;
     return __generator(this, function (_b) {
@@ -223,127 +256,38 @@ router.delete('/:id', function (req, res) { return __awaiter(void 0, void 0, voi
         }
     });
 }); });
-router.post('/google', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var oauth, token, options, req_1, client, ticket, jsonData, user, message, userData, newUser, newtoken, error_6;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
+router.get('/logingoogle', passport_1.passport.authenticate("google"));
+router.get('/:medio/redirect', function (req, res, next) {
+    var medio = req.params.medio;
+    var medios = ["facebook", "google"];
+    if (medios.indexOf(medio) < 0) {
+        return res.send("No encontrado");
+    }
+    passport_1.passport.authenticate(medio, { failureRedirect: '/login-failed' })(req, res, next);
+}, function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var _a, name, email, id, medio, user, idbase, newUser, token;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
             case 0:
-                console.log(req.body);
-                oauth = req.body.oauth || false;
-                token = req.body.id_token;
-                if (!oauth) return [3 /*break*/, 1];
-                options = {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                };
-                console.log("https://www.googleapis.com/oauth2/v2/userinfo?access_token=".concat(token));
-                req_1 = https_1.default.request("https://www.googleapis.com/oauth2/v2/userinfo?access_token=".concat(token), options, function (res1) {
-                    var data = '';
-                    // Escucha el evento 'data' para recibir los datos de la respuesta
-                    res1.on('data', function (chunk) {
-                        data += chunk;
-                    });
-                    // Escucha el evento 'end' para finalizar la solicitud
-                    res1.on('end', function () { return __awaiter(void 0, void 0, void 0, function () {
-                        var jsonData, user, message, userData, newUser, newtoken, error_7;
-                        return __generator(this, function (_a) {
-                            switch (_a.label) {
-                                case 0:
-                                    _a.trys.push([0, 6, , 7]);
-                                    jsonData = JSON.parse(data);
-                                    console.log('Datos obtenidos:', jsonData);
-                                    return [4 /*yield*/, userDB_1.default.findOne({ email: jsonData.email })];
-                                case 1:
-                                    user = _a.sent();
-                                    message = 'Se ha iniciado sesión';
-                                    if (!!user) return [3 /*break*/, 4];
-                                    userData = {};
-                                    userData.email = jsonData.email;
-                                    userData.telefono = "";
-                                    userData.nombre = jsonData.given_name;
-                                    ;
-                                    userData.apellido = jsonData.family_name;
-                                    userData.password = "no_password";
-                                    userData.telefono = "no_phone";
-                                    userData.fechaNacimiento = new Date();
-                                    newUser = new userDB_1.default(userData);
-                                    return [4 /*yield*/, newUser.save()];
-                                case 2:
-                                    _a.sent();
-                                    return [4 /*yield*/, userDB_1.default.findOne({ email: jsonData.email })];
-                                case 3:
-                                    user = (_a.sent());
-                                    message = 'Se ha creado nuevo usuario';
-                                    _a.label = 4;
-                                case 4: return [4 /*yield*/, (0, jwt_1.generateJWT)({ "id": user._id }, 'MATIAS', '1h')];
-                                case 5:
-                                    newtoken = _a.sent();
-                                    // Iniciar sesión con éxito, puedes generar un token JWT aquí si es necesario
-                                    return [2 /*return*/, res.status(200).json({ message: message, user: user, token: newtoken })];
-                                case 6:
-                                    error_7 = _a.sent();
-                                    console.error('Error al analizar los datos JSON:', error_7);
-                                    return [2 /*return*/, res.status(200).json({ data: "error", error: error_7 })]; // Devuelve un mensaje de error JSON aquí
-                                case 7: return [2 /*return*/];
-                            }
-                        });
-                    }); });
-                });
-                req_1.on('error', function (error) {
-                    console.error('Error en la solicitud:', error);
-                    return res.status(200).json({ data: "error", error: error }); // Devuelve un mensaje de error JSON aquí
-                });
-                // Finaliza la solicitud
-                req_1.end();
-                return [3 /*break*/, 10];
+                _a = req.user, name = _a.name, email = _a.email, id = _a.id, medio = _a.medio;
+                return [4 /*yield*/, userDB_1.default.findOne({ email: email })];
             case 1:
-                client = new google_auth_library_1.OAuth2Client();
-                _a.label = 2;
+                user = _b.sent();
+                idbase = "";
+                if (!user) return [3 /*break*/, 2];
+                idbase = user._id;
+                return [3 /*break*/, 4];
             case 2:
-                _a.trys.push([2, 9, , 10]);
-                return [4 /*yield*/, client.verifyIdToken({
-                        idToken: token,
-                        audience: process.env.GOOGLE_ID_CLIENTE, // Specify the CLIENT_ID of the app that accesses the backend
-                    })];
-            case 3:
-                ticket = _a.sent();
-                console.log("payload", ticket);
-                jsonData = ticket.getPayload();
-                console.log(jsonData);
-                return [4 /*yield*/, userDB_1.default.findOne({ email: jsonData.email })];
-            case 4:
-                user = _a.sent();
-                message = 'Se ha iniciado sesión';
-                if (!!user) return [3 /*break*/, 7];
-                userData = {};
-                userData.email = jsonData.email;
-                userData.telefono = "";
-                userData.nombre = jsonData.given_name;
-                ;
-                userData.apellido = jsonData.family_name;
-                userData.password = "no_password";
-                userData.telefono = "no_phone";
-                userData.fechaNacimiento = new Date();
-                newUser = new userDB_1.default(userData);
+                newUser = new userDB_1.default({ name: name, email: email, password: "xxxxxx" });
                 return [4 /*yield*/, newUser.save()];
+            case 3:
+                _b.sent();
+                idbase = newUser._id;
+                _b.label = 4;
+            case 4: return [4 /*yield*/, (0, jwt_1.generateJWT)({ "id": idbase }, JWTpass, '1h')];
             case 5:
-                _a.sent();
-                return [4 /*yield*/, userDB_1.default.findOne({ email: jsonData.email })];
-            case 6:
-                user = (_a.sent());
-                message = 'Se ha creado nuevo usuario';
-                _a.label = 7;
-            case 7: return [4 /*yield*/, (0, jwt_1.generateJWT)({ "id": user._id }, 'MATIAS', '1h')];
-            case 8:
-                newtoken = _a.sent();
-                // Iniciar sesión con éxito, puedes generar un token JWT aquí si es necesario
-                return [2 /*return*/, res.status(200).json({ message: message, user: user, token: newtoken })];
-            case 9:
-                error_6 = _a.sent();
-                return [2 /*return*/, res.status(200).json({ 'data': "error", error: error_6 })];
-            case 10: return [2 /*return*/];
+                token = _b.sent();
+                return [2 /*return*/, res.redirect("../../?token=".concat(token))];
         }
     });
 }); });

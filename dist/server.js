@@ -35,15 +35,16 @@ var router_1 = __importDefault(require("./router"));
 var fs = require('fs');
 var https = require('https');
 var dotenv = __importStar(require("dotenv"));
+var express_session_1 = __importDefault(require("express-session"));
 dotenv.config();
 var app = (0, express_1.default)();
 exports.app = app;
 var ServerStart = function () {
-    var port = process.env.PORT || 443;
+    var port = process.env.PORT || 8000;
     console.log("Puerto base", port, process.env.PORT);
     var whiteList = ['http://localhost:3000', 'https://localhost:3000', 'http://localhost:3001', 'https://tarotai-5crc.onrender.com', undefined];
-    var privateKey = fs.readFileSync(path_1.default.join(__dirname, '../public/certificates/private-key.pem'), 'utf8');
-    var certificate = fs.readFileSync(path_1.default.join(__dirname, '../public/certificates/public-cert.pem'), 'utf8');
+    //const privateKey = fs.readFileSync(path.join(__dirname, '../public/certificates/private-key.pem'), 'utf8');
+    //const certificate = fs.readFileSync(path.join(__dirname, '../public/certificates/public-cert.pem'), 'utf8');
     (0, connectionBd_1.default)();
     var corsOptions = {
         origin: function (origin, callback) {
@@ -60,12 +61,13 @@ var ServerStart = function () {
     };
     // Middleware para el análisis de JSON en solicitudes POST
     app.use(express_1.default.json());
+    app.use((0, express_session_1.default)({ secret: 'tu_clave_secreta_aquí', resave: false, saveUninitialized: false }));
     // Ruta de la API JSON (POST) || cors solo para esta ruta del API
     app.use('/api', (0, cors_1.default)(corsOptions), router_1.default);
     // Ruta para servir archivos estáticos desde la carpeta 'public'
-    app.use(express_1.default.static(path_1.default.join(__dirname, '../public/build')));
+    app.use(express_1.default.static(path_1.default.join(__dirname, '../public')));
     app.use('/inicio', function (req, res) {
-        res.sendFile(path_1.default.join(__dirname, '../public/build/index.html'));
+        res.sendFile(path_1.default.join(__dirname, '../public/index.html'));
     });
     //const httpsServer = https.createServer({ key: privateKey, cert: certificate }, app);
     //httpsServer.listen(port, () => {

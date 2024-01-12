@@ -26,11 +26,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var mongoose_1 = __importStar(require("mongoose"));
 // Define el schema de usuario
 var userSchema = new mongoose_1.Schema({
-    nombre: {
-        type: String,
-        required: true,
-    },
-    apellido: {
+    name: {
         type: String,
         required: true,
     },
@@ -39,14 +35,6 @@ var userSchema = new mongoose_1.Schema({
         required: true,
         minlength: 6,
         select: false,
-    },
-    fechaNacimiento: {
-        type: Date,
-        required: true
-    },
-    telefono: {
-        type: String,
-        required: true,
     },
     email: {
         type: String,
