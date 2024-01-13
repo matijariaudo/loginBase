@@ -11,6 +11,7 @@ var dotenv_1 = require("dotenv");
 (0, dotenv_1.config)();
 var GOOGLE_ID = process.env.GOOGLE_ID || "";
 var GOOGLE_SECRET = process.env.GOOGLE_SECRET || "";
+var URL_BASE = process.env.URL_BASE;
 var GoogleStrategy = passport_google_oauth20_1.default.Strategy;
 function baseProcess(medio) {
     return function (accessToken, refreshToken, profile, done) {
@@ -27,7 +28,7 @@ function baseProcess(medio) {
 var GoogleInstance = new GoogleStrategy({
     clientID: GOOGLE_ID,
     clientSecret: GOOGLE_SECRET,
-    callbackURL: "https://chuncho.onrender.com/api/google/redirect",
+    callbackURL: "".concat(URL_BASE, "/api/google/redirect"),
     scope: ['profile', 'email']
 }, baseProcess("Google"));
 passport_1.default.serializeUser(function (user, done) { done(null, user); });

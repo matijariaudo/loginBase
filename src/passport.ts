@@ -5,6 +5,7 @@ config()
 
 const GOOGLE_ID=process.env.GOOGLE_ID||"";
 const GOOGLE_SECRET=process.env.GOOGLE_SECRET||"";
+const URL_BASE=process.env.URL_BASE;
 const GoogleStrategy = passportGoogle.Strategy;
 
 function baseProcess(medio:string){
@@ -24,7 +25,7 @@ const GoogleInstance=new GoogleStrategy(
     {
       clientID: GOOGLE_ID,
       clientSecret: GOOGLE_SECRET,
-      callbackURL: "https://chuncho.onrender.com/api/google/redirect",
+      callbackURL: `${URL_BASE}/api/google/redirect`,
       scope: [ 'profile','email' ]
     },
     baseProcess("Google")

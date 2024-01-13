@@ -37,18 +37,18 @@ var https = require('https');
 var dotenv = __importStar(require("dotenv"));
 var express_session_1 = __importDefault(require("express-session"));
 dotenv.config();
+var URL_BASE = process.env.URL_BASE || '';
+var ESESSION = process.env.ESESSION || '';
+var port = process.env.PORT || 8000;
 var app = (0, express_1.default)();
 exports.app = app;
 var ServerStart = function () {
-    var port = process.env.PORT || 8000;
-    console.log("Puerto base", port, process.env.PORT);
-    var whiteList = ['http://localhost:3000', 'https://localhost:3000', 'http://localhost:3001', 'https://tarotai-5crc.onrender.com', undefined];
+    var whiteList = [URL_BASE, undefined];
     //const privateKey = fs.readFileSync(path.join(__dirname, '../public/certificates/private-key.pem'), 'utf8');
     //const certificate = fs.readFileSync(path.join(__dirname, '../public/certificates/public-cert.pem'), 'utf8');
     (0, connectionBd_1.default)();
     var corsOptions = {
         origin: function (origin, callback) {
-            console.log("Origen:", origin, whiteList.indexOf(origin), whiteList.indexOf("https://tarotai-5crc.onrender.com"));
             if (origin ? whiteList.indexOf(origin) !== -1 : true) {
                 // Permite la solicitud si el origen está en la lista blanca o si no se especifica un origen (ej. solicitud local)
                 callback(null, true);
@@ -61,7 +61,7 @@ var ServerStart = function () {
     };
     // Middleware para el análisis de JSON en solicitudes POST
     app.use(express_1.default.json());
-    app.use((0, express_session_1.default)({ secret: 'tu_clave_secreta_aquí', resave: false, saveUninitialized: false }));
+    app.use((0, express_session_1.default)({ secret: ESESSION, resave: false, saveUninitialized: false }));
     // Ruta de la API JSON (POST) || cors solo para esta ruta del API
     app.use('/api', (0, cors_1.default)(corsOptions), router_1.default);
     // Ruta para servir archivos estáticos desde la carpeta 'public'
