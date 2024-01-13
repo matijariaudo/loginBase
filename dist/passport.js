@@ -27,7 +27,7 @@ function baseProcess(medio) {
 var GoogleInstance = new GoogleStrategy({
     clientID: GOOGLE_ID,
     clientSecret: GOOGLE_SECRET,
-    callbackURL: "/api/google/redirect",
+    callbackURL: "https://chuncho.onrender.com/api/google/redirect",
     scope: ['profile', 'email']
 }, baseProcess("Google"));
 passport_1.default.serializeUser(function (user, done) { done(null, user); });

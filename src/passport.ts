@@ -24,7 +24,7 @@ const GoogleInstance=new GoogleStrategy(
     {
       clientID: GOOGLE_ID,
       clientSecret: GOOGLE_SECRET,
-      callbackURL: "/api/google/redirect",
+      callbackURL: "https://chuncho.onrender.com/api/google/redirect",
       scope: [ 'profile','email' ]
     },
     baseProcess("Google")
