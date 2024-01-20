@@ -43,7 +43,7 @@ var port = process.env.PORT || 8000;
 var app = (0, express_1.default)();
 exports.app = app;
 var ServerStart = function () {
-    var whiteList = [URL_BASE, undefined];
+    var whiteList = [URL_BASE, undefined, "http://192.168.0.28:3000"];
     //const privateKey = fs.readFileSync(path.join(__dirname, '../public/certificates/private-key.pem'), 'utf8');
     //const certificate = fs.readFileSync(path.join(__dirname, '../public/certificates/public-cert.pem'), 'utf8');
     (0, connectionBd_1.default)();
@@ -51,10 +51,12 @@ var ServerStart = function () {
         origin: function (origin, callback) {
             if (origin ? whiteList.indexOf(origin) !== -1 : true) {
                 // Permite la solicitud si el origen está en la lista blanca o si no se especifica un origen (ej. solicitud local)
+                console.log(origin);
                 callback(null, true);
             }
             else {
                 // Bloquea la solicitud si el origen no está en la lista blanca
+                console.log(origin);
                 callback(new Error('No permitido por CORS'));
             }
         },

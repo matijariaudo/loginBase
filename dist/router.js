@@ -69,6 +69,7 @@ var crypt_1 = require("./crypt");
 var jwt_1 = require("./jwt");
 var passport_1 = require("./passport");
 var dotenv = __importStar(require("dotenv"));
+var freeOpenIA_1 = require("./freeOpenIA");
 dotenv.config();
 var JWTpass = process.env.JWT || '';
 var router = express_1.default.Router();
@@ -288,6 +289,19 @@ router.get('/:medio/redirect', function (req, res, next) {
             case 5:
                 token = _b.sent();
                 return [2 /*return*/, res.redirect("../../?token=".concat(token))];
+        }
+    });
+}); });
+router.post('/tarot', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var _a, cards, question, response;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                _a = req.body, cards = _a.cards, question = _a.question;
+                return [4 /*yield*/, (0, freeOpenIA_1.FreeiA)("Actua como experto en tarot. Interpreta las cartas[" + cards.join(",") + "] enfocada la siguiente pregunta:" + question + ".  Estructura la respuesta de la siguiente forma: 3 primeros parrafos el significado de cada carta, 4to parrafo una conclusión.Responde en ingles. Doble salto de linea entre parrafo y parrafo.")];
+            case 1:
+                response = _b.sent();
+                return [2 /*return*/, res.send({ response: response })];
         }
     });
 }); });
