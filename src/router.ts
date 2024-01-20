@@ -80,7 +80,7 @@ router.post('/token',middleSession,async(req:Request,res:Response)=>{
   const {token}:{token:string}=req.body;
   const id:any=await validateAndDecodeJWT(token,JWTpass);
   if(!id){  return res.json({status:false})}
-  const user=await UserModel.findById(id.id)
+  const user:any=await UserModel.findById(id.id)
   if(!user){  return res.json({status:false})}
   const newToken=await generateJWT({id:user._id},JWTpass,'1h')
   console.log(user)

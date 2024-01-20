@@ -1,7 +1,21 @@
 import puppeteer from "puppeteer";
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 export const FreeiA=async (search:string) => {
-    const browser = await puppeteer.launch({ headless:true});
+    let puconfig;
+    if(process.env.PRODUCCION!="false"){
+    puconfig={
+        executablePath: '/usr/bin/google-chrome', // Esto puede variar según la configuración específica de Render
+        headless:true
+      }
+    }else{
+    puconfig={
+        headless:true
+        }
+    }
+    console.log(puconfig)
+    const browser = await puppeteer.launch(puconfig);
 	const page = await browser.newPage();
      // Set the viewport's width and height
     await page.setViewport({ width: 600, height: 400 });
