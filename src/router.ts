@@ -5,6 +5,9 @@ import { hashPassword, validatePassword } from './crypt';
 import { generateJWT, validateAndDecodeJWT } from './jwt';
 import {passport} from './passport'
 import * as dotenv from 'dotenv'
+import { FreeiA } from './freeOpenIA';
+
+
 dotenv.config();
 const JWTpass=process.env.JWT || '';
 
@@ -146,5 +149,11 @@ router.get('/:medio/redirect', (req:Request, res:Response, next) => {
   const token=await generateJWT({"id":idbase},JWTpass,'1h');
   return res.redirect(`../../?token=${token}`);
 });
+
+router.post('/tarot',async(req,res)=>{
+  const {cards,question}=req.body;
+  const response=await FreeiA("Actua como experto en tarot. Interpreta las cartas["+cards.join(",")+"] enfocada la siguiente pregunta:"+question+".  Estructura la respuesta de la siguiente forma: 3 primeros parrafos el significado de cada carta, 4to parrafo una conclusión.Responde en ingles. Doble salto de linea entre parrafo y parrafo.")
+  return res.send({response})
+})
 
 export default router;
